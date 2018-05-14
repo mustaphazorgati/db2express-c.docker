@@ -64,32 +64,14 @@ trap "terminate_db2"  SIGTERM
 trap "restart_db2"   SIGUSR1
 
 if [ ! -f ~/db2inst1_pw_set ]; then
-  if [ -z "$DB2INST1_PASSWORD" ]; then
-    log_error "error: DB2INST1_PASSWORD not set"
-    log_error "Did you forget to add -e DB2INST1_PASSWORD=... ?"
+  (echo "db2inst1-pwd"; echo "db2inst1-pwd") | passwd db2inst1 > /dev/null  2>&1
+  if [ $? != 0 ];then
+    log_error "Changing password for db2inst1 failed"
     exit 1
-  else
-    log_info "Setting db2inst1 user password..."
-    (echo "$DB2INST1_PASSWORD"; echo "$DB2INST1_PASSWORD") | passwd db2inst1 > /dev/null  2>&1
-    if [ $? != 0 ];then
-      log_error "Changing password for db2inst1 failed"
-      exit 1
-    fi
-    touch ~/db2inst1_pw_set
   fi
+  touch ~/db2inst1_pw_set
 fi
 if [ ! -f ~/db2_license_accepted ];then
-  if [ -z "$LICENSE" ];then
-     log_error "error: LICENSE not set"
-     log_error "Did you forget to add '-e LICENSE=accept' ?"
-     exit 1
-  fi
-
-  if [ "${LICENSE}" != "accept" ];then
-     log_error "error: LICENSE not set to 'accept'"
-     log_error "Please set '-e LICENSE=accept' to accept License before use the DB2 software contained in this image."
-     exit 1
-  fi
   touch ~/db2_license_accepted
 fi
 

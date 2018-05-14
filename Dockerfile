@@ -52,18 +52,9 @@ RUN yum install -y \
 
 ENV DB2EXPRESSC_DATADIR /home/db2inst1/data
 
-# IMPORTANT Note:
-#  Due to compliance for IBM product, you have to host a downloaded DB2 Express-C Zip file yourself
-#  Here are suggested steps:
-#    1) Please download zip file of db2 express-c from http://www-01.ibm.com/software/data/db2/express-c/download.html
-#    2) Then upload it to a cloud storage like AWS S3 or IBM SoftLayer Object Storage
-#    3) Acquire a URL and SHA-256 hash of file and pass it via Docker's build time argument facility
-ARG DB2EXPRESSC_URL
-ARG DB2EXPRESSC_SHA256
+COPY ./db.tar.gz /tmp/expc.tar.gz
 
-RUN curl -fSLo /tmp/expc.tar.gz $DB2EXPRESSC_URL \
-    && echo "$DB2EXPRESSC_SHA256 /tmp/expc.tar.gz" | sha256sum -c - \
-    && cd /tmp && tar xf expc.tar.gz \
+RUN cd /tmp && tar xf expc.tar.gz \
     && su - db2inst1 -c "/tmp/expc/db2_install -y -b /home/db2inst1/sqllib" \
     && echo '. /home/db2inst1/sqllib/db2profile' >> /home/db2inst1/.bash_profile \
     && rm -rf /tmp/db2* && rm -rf /tmp/expc* \
@@ -73,7 +64,7 @@ RUN curl -fSLo /tmp/expc.tar.gz $DB2EXPRESSC_URL \
     && sed -ri 's/^\*(SVCEPORT)=48000/\1=50000/g' /home/db2inst1/sqllib/instance/db2rfe.cfg \
     && mkdir $DB2EXPRESSC_DATADIR && chown db2inst1.db2iadm1 $DB2EXPRESSC_DATADIR
 
-RUN su - db2inst1 -c "db2start && db2set DB2COMM=TCPIP && db2 UPDATE DBM CFG USING DFTDBPATH $DB2EXPRESSC_DATADIR IMMEDIATE && db2 create database db2inst1" \
+RUN su - db2inst1 -c "db2start && db2set DB2COMM=TCPIP && db2 UPDATE DBM CFG USING DFTDBPATH $DB2EXPRESSC_DATADIR IMMEDIATE && db2 create database TSKDB using codeset utf-8 territory en-us collate using 'UCA500R1_CX' PAGESIZE 32 K" \
     && su - db2inst1 -c "db2stop force" \
     && cd /home/db2inst1/sqllib/instance \
     && ./db2rfe -f ./db2rfe.cfg
