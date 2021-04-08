@@ -24,7 +24,7 @@
 #   centos:7
 
 
-FROM centos:8
+FROM centos:7
 
 MAINTAINER Leo Wu <leow@ca.ibm.com>
 
@@ -49,7 +49,12 @@ RUN yum install -y \
     libstdc++-devel.i686 \
     numactl-libs \
     which \
+    glibc-locale-source \
+    glibc-langpack-de \
     && yum clean all
+
+RUN localedef -i de_DE -c -f UTF-8 -A /usr/share/locale/locale.alias de_DE.UTF-8 && echo "LANG=de_DE.UTF-8" > /etc/locale.conf
+RUN echo "export LANG=de_DE.UTF-8" >> /etc/profile
 
 ENV DB2EXPRESSC_DATADIR /home/db2inst1/data
 
