@@ -70,7 +70,7 @@ RUN cd /tmp && tar xf expc.tar.gz \
     && sed -ri 's/^\*(SVCEPORT)=48000/\1=50000/g' /home/db2inst1/sqllib/instance/db2rfe.cfg \
     && mkdir $DB2EXPRESSC_DATADIR && chown db2inst1.db2iadm1 $DB2EXPRESSC_DATADIR
 
-RUN su - db2inst1 -c "db2start && db2set DB2COMM=TCPIP && db2 UPDATE DBM CFG USING DFTDBPATH $DB2EXPRESSC_DATADIR IMMEDIATE && db2 create database TSKDB using codeset utf-8 territory en-us collate using 'CLDR181_LDE_AS_CX_EX_FX_HX_NX_S3' PAGESIZE 32 K" \
+RUN su - db2inst1 -c "db2start && db2set DB2COMM=TCPIP && db2set -g -null DB2_COMPATIBILITY_VECTOR && db2 UPDATE DBM CFG USING DFTDBPATH $DB2EXPRESSC_DATADIR IMMEDIATE && db2 create database TSKDB using codeset utf-8 territory en-us collate using 'CLDR181_LDE_AS_CX_EX_FX_HX_NX_S3' PAGESIZE 32 K" \
     && su - db2inst1 -c "db2stop force" \
     && cd /home/db2inst1/sqllib/instance \
     && ./db2rfe -f ./db2rfe.cfg
